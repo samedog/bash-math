@@ -1,5 +1,5 @@
 # bash-math
-why use bc, python or perl to calculate floats in your bashscript when you can use hacky and horrible bash functinos? ask no more for i just made a set of hacky, horrible and unoptimized math functions for bash.
+why use bc, python or perl to calculate floats in your bashscript when you can use hacky and horrible bash functiorinos? ask no more for i just made a set of hacky, horrible and un-optimized math functions for bash.
 
 THIS IS A WORK IN PROGRESS
 
