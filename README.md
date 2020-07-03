@@ -19,3 +19,11 @@ Current functions:
 
 * sum_float(): can sum any given float (x,y) and/or int (x) list (whitespace sepparated) and will return a float [WOAH!!]
   * If a single number is passed it will return a float for that number, not handy at all but it's an unintended feature.
+
+
+TODO:
+
+* change some if with case because why not
+* natural log and log
+* nroot
+* ask myself why the hell i'm doing this
