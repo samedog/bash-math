@@ -93,5 +93,5 @@ function sum_float(){
 }
 
 function mult_float(){
-	echo 1	
+	echo "placeholder"
 }
