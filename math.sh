@@ -28,7 +28,7 @@ function pow(){
 
 # this is hacky as hell but it works
 # can add non floats and will return a float
-# negative numbers KINDS work but it breaks
+# NOW IT SUPPORTS NEGATIVE FLOATS AND INTS
 function sum_float(){
 	int_cnt=0
 	bigger_cnt=0
@@ -53,7 +53,6 @@ function sum_float(){
 	
 	for value in $decimals
 	do
-
 		if [ ${#value} -lt $bigger_cnt ];then
 			zeroes=$(( $bigger_cnt - ${#value} ))
 			for (( i=0; i<$zeroes; i++ ))
@@ -61,20 +60,30 @@ function sum_float(){
 				(( value *= 10 ))
 			done
 		fi
-		if [ -z $value ];then
+		if [[ -z $value || $value == "-" ]];then
 			value="0"
 		fi
 		(( decimal_sum += $value ))
+		
 	done
-
 	if [ ${#decimal_sum} -gt $bigger_cnt ];then
 		offset=$(( ${#decimal_sum} - $bigger_cnt ))
 		decimal_sum_final=${decimal_sum:$offset}
-		whole_remaining=${decimal_sum:0:$offset}
+		whole_remaining=${decimal_sum::$offset}
+		if [ $decimal_sum -lt 0 ];then
+			tens=1
+			temp_sum=${decimal_sum#?};
+			for ((i=0; i<${#temp_sum}; i++))
+			do
+				(( tens *= 10 )) 
+			done
+			decimal_sum=$(( tens - $temp_sum ))
+			whole=$(( $whole + -1 ))
+		fi
 	else
 		decimal_sum_final=$decimal_sum
 	fi
-	if [ ! -z $whole_remaining ];then
+	if [[ ! -z $whole_remaining && $whole_remaining != "-" ]];then
 		whole=$(( $whole + $whole_remaining ))
 	fi
 	if [ -z $decimal_sum_final ];then
