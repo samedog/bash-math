@@ -5,7 +5,7 @@ THIS IS A WORK IN PROGRESS
 
 Just include the math.sh in to your bashcript with: 
 
-```bashscript
+```Shell
 . path/to/math.sh
 ```
 
