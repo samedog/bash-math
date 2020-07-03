@@ -21,6 +21,15 @@ Current functions:
   * If a single number is passed it will return a float for that number, not handy at all but it's an unintended feature.
 
 
+Test code:
+```Shell
+#!/bin/bash
+. /path/to/math.sh
+
+sum_float 2,1 3
+
+```
+
 TODO:
 
 * change some if with case because why not
