@@ -91,3 +91,7 @@ function sum_float(){
 	fi
 	echo $whole,$decimal_sum_final
 }
+
+function mult_float(){
+	echo 1	
+}
