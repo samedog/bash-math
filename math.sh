@@ -53,16 +53,16 @@ function sum_float(){
 	
 	for value in $decimals
 	do
-		if [ ${#value} -lt $bigger_cnt ];then
+		if [[ -z $value || $value == "-" ]];then
+			value="0"
+		elif [ ${#value} -lt $bigger_cnt ];then
 			zeroes=$(( $bigger_cnt - ${#value} ))
 			for (( i=0; i<$zeroes; i++ ))
 			do
 				(( value *= 10 ))
 			done
 		fi
-		if [[ -z $value || $value == "-" ]];then
-			value="0"
-		fi
+
 		(( decimal_sum += $value ))
 		
 	done
@@ -90,8 +90,4 @@ function sum_float(){
 		decimal_sum_final=0
 	fi
 	echo $whole,$decimal_sum_final
-}
-
-function mult_float(){
-	echo "placeholder"
 }
