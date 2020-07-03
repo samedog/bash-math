@@ -26,4 +26,5 @@ TODO:
 * change some if with case because why not
 * natural log and log
 * nroot
+* float division
 * ask myself why the hell i'm doing this
