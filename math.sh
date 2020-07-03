@@ -28,7 +28,7 @@ function pow(){
 
 # this is hacky as hell but it works
 # can add non floats and will return a float
-# NOW IT SUPPORTS NEGATIVE FLOATS AND INTS
+# NOPE, NEGATIVE STILL FAILS i should not try this @ 7am with no sleep
 function sum_float(){
 	int_cnt=0
 	bigger_cnt=0
