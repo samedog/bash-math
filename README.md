@@ -13,7 +13,7 @@ and enjoy.
 
 Current functions:
 
-* addsubs(): can sum any given int (x) list (whitespace sepparated), supports -- +- and ++ 
+* addsubs(): can sum any given int (x) list (whitespace separated), supports -- +- and ++ 
 
 * pow(): does a simple x^y ($1^$2) doesn't supports negative exponents yet
 
