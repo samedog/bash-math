@@ -6,7 +6,7 @@ THIS IS A WORK IN PROGRESS
 Just include the math.sh in to your bashcript with: 
 
 ```bashscript
-. path/to/bash.sh
+. path/to/math.sh
 ```
 
 and enjoy.
