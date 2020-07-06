@@ -206,7 +206,7 @@ function mult_float(){
 	fi
 
 	COMMA_PLACE=$(( $WHOLE_COUNT - 2 ))
-	echo $COMMA_PLACE
+
 	
 	PLACE=${RESULT:$COMMA_PLACE:1}
 	for (( i=0; i<${#RESULT}; i++ )); do
@@ -215,10 +215,8 @@ function mult_float(){
 		fi
 		RESULT_TMP+="${RESULT:$i:1}"
 	done
-	
-	echo $RESULT_TMP
-	
-	exit
+			
+	RESULT=$RESULT_TMP
 	
 	if [ ${RESULT:0:1} == "," ];then
 		RESULT=${RESULT/","/"0,"}
