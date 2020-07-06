@@ -19,7 +19,7 @@ Current functions:
 
 * sum_float(): can sum any given float (x,y) and/or int (x) list (whitespace separated) and will return a float [WOAH!!]
   * If a single number is passed it will return a float for that number, not handy at all but it's an unintended feature.
-
+* mult_float(): can multiply ints and floats and will return a float.
 
 Test code:
 ```Shell
