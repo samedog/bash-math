@@ -28,67 +28,81 @@ function pow(){
 
 # this is hacky as hell but it works
 # can add non floats and will return a float
-# NOW IT WORKS AGAIN, DUUUUUUDE
+# add or substract 2 floats
+# if a single int is given it will return a float
 function sum_float(){
-	int_cnt=0
-	bigger_cnt=0
-	decimal_sum=0
-	whole_remaining=""
+	if [[ ${#@} -gt 2 ]];then
+		echo "too may arguments"
+		exit 1
+	fi
+	DECIMAL_COUNT=0
+	OLD_IFS=$IFS
 	for i in "$@"
 	do IFS=","
 		set -- $i
 		int_cnt=${#2}
-		if [ $int_cnt -gt $bigger_cnt ];then
-			bigger_cnt=$int_cnt
+		if [ $int_cnt -gt $DECIMAL_COUNT ];then
+			DECIMAL_COUNT=$int_cnt
 		fi
-		if [[ $1 == "-"* ]];then
-			decimals+="-$2,"
-		else
-			decimals+="$2,"
-		fi
-		
-		(( whole += $1 ))
+		DECIMAL_ARRAY+=("$2")
+		WHOLE_ARRAY+=("$1")
 		
 	done
-	for value in $decimals
+	IFS=$OLD_IFS
+
+	
+	for (( i=0; i<${#DECIMAL_ARRAY[@]}; i++ ))
 	do
-		if [[ -z $value || $value == "-" ]];then
-			value="0"
-		elif [ ${#value} -lt $bigger_cnt ];then
-			zeroes=$(( $bigger_cnt - ${#value} ))
+		tmp_zeroes=0
+		tmp_count=$DECIMAL_COUNT
+		value=${DECIMAL_ARRAY[$i]}
+		whole_value=${WHOLE_ARRAY[$i]}
+		if [ -z $value ];then
+			(( tmp_zeroes += 1))
+		fi
+		(( tmp_count += $tmp_zeroes))
+		join_value=$whole_value$value
+		if [ ${#join_value} -lt $tmp_count ];then
+			zeroes=$(( $tmp_count - ${#join_value} ))
 			for (( i=0; i<$zeroes; i++ ))
 			do
-				(( value *= 10 ))
+				(( join_value *= 10 ))
 			done
 		fi
-
-		(( decimal_sum += $value ))
-		
+		JOIN_ARRAY+=($join_value)
 	done
-	if [ ${#decimal_sum} -gt $bigger_cnt ];then
-		if [ $decimal_sum -lt 0 ];then
-			tens=1
-			temp_sum=${decimal_sum#?};
-			for ((i=0; i<${#temp_sum}; i++))
-			do
-				(( tens *= 10 )) 
-			done
-			decimal_sum=$(( tens - $temp_sum ))
-			whole=$(( $whole - 1 ))
-		fi
-		offset=$(( ${#decimal_sum} - $bigger_cnt ))
-		decimal_sum_final=${decimal_sum:$offset}
-		whole_remaining=${decimal_sum::$offset}
-
-	else
-		decimal_sum_final=$decimal_sum
-	fi
 	
-	if [[ ! -z $whole_remaining && $whole_remaining != "-" ]];then
-		whole=$(( $whole + $whole_remaining ))
+	
+	FIRST=${JOIN_ARRAY[0]}
+	SECOND=${JOIN_ARRAY[1]}
+
+	
+	if [[ -z $SECOND || -z $FIRST ]];then
+		RESULT="$(( $SECOND + $FIRST )),0"
+	else
+		if [ $FIRST -gt $SECOND ];then
+			RESULT=$(( $FIRST + $SECOND ))
+		else
+			RESULT=$(( $SECOND + $FIRST ))
+		fi
+		if [ $RESULT -lt 0 ];then
+			NEGATIVE=1
+			(( RESULT *= -1 )) 
+		fi
+
+		COMMA_PLACE=$(( ${#RESULT} - $DECIMAL_COUNT ))
+		PLACE=${RESULT:$COMMA_PLACE:1}
+		RESULT=${RESULT/$PLACE/",$PLACE"}
+		
+		if [ ${RESULT:0:1} == "," ];then
+			RESULT=${RESULT/","/"0,"}
+		fi
+		
+		if [[ $NEGATIVE -eq 1 ]];then
+			RESULT=${RESULT/${RESULT:0:1}/-${RESULT:0:1}}
+		fi
+
 	fi
-	if [ -z $decimal_sum_final ];then
-		decimal_sum_final=0
-	fi
-	echo $whole,$decimal_sum_final
+		echo $RESULT
 }
+
