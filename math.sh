@@ -44,10 +44,135 @@ function sum_float(){
 		if [ $int_cnt -gt $DECIMAL_COUNT ];then
 			DECIMAL_COUNT=$int_cnt
 		fi
+
 		DECIMAL_ARRAY+=("$2")
 		WHOLE_ARRAY+=("$1")
+		
 	done
 	IFS=$OLD_IFS
+	
+	
+	for (( i=0; i<${#DECIMAL_ARRAY[@]}; i++ ))
+	do
+		tmp_zeroes=0
+		tmp_count=$DECIMAL_COUNT+1
+		NEGATIVE=0
+		value=${DECIMAL_ARRAY[$i]}
+		whole_value=${WHOLE_ARRAY[$i]}
+		if [ -z $value ];then
+			(( tmp_zeroes += 1))
+		fi
+		(( tmp_count += $tmp_zeroes))
+		join_value=$whole_value$value
+		if [ $join_value -lt 0 ];then
+			NEGATIVE=1
+			(( join_value *= -1 )) 
+		fi
+		
+		if [ ${#join_value} -lt $tmp_count ];then
+			zeroes=$(( $tmp_count - ${#join_value} ))
+			for (( i=0; i<$zeroes; i++ ))
+			do
+				(( join_value *= 10 ))
+			done
+		fi
+		if [ $NEGATIVE -eq 1 ];then
+			(( join_value *= -1 ))
+		fi
+		JOIN_ARRAY+=($join_value)
+	done
+	
+	
+	
+	FIRST=${JOIN_ARRAY[0]}
+	SECOND=${JOIN_ARRAY[1]}
+
+
+	if [[ -z $SECOND || -z $FIRST ]];then
+		RESULT="$(( $SECOND + $FIRST )),0"
+	else
+		if [ $FIRST -gt $SECOND ];then
+			RESULT=$(( $FIRST + $SECOND ))
+		else
+			RESULT=$(( $SECOND + $FIRST ))
+		fi
+		if [ $RESULT -lt 0 ];then
+			NEGATIVE=1
+			(( RESULT *= -1 )) 
+		fi
+		
+		if [ ${#RESULT} -lt $DECIMAL_COUNT ];then
+			zeroes=$(( $DECIMAL_COUNT -1 ))
+			for (( i=0; i<$zeroes; i++ ))
+			do
+				REBASED_RESULT+="0"
+			done
+			RESULT=$REBASED_RESULT$RESULT
+		fi
+		
+		
+		
+		COMMA_PLACE=$(( ${#RESULT} - $DECIMAL_COUNT ))
+		PLACE=${RESULT:$COMMA_PLACE:1}
+		
+			
+		PLACE=${RESULT:$COMMA_PLACE-1:1}
+		for (( i=0; i<${#RESULT}; i++ )); do
+			if [ $i -eq $COMMA_PLACE ];then
+				RESULT_TMP+=","
+			fi
+			RESULT_TMP+="${RESULT:$i:1}"
+		done
+		
+		RESULT=$RESULT_TMP
+		
+		if [ ${RESULT:0:1} == "," ];then
+			RESULT=${RESULT/","/"0,"}
+		fi
+		
+		if [[ $NEGATIVE -eq 1 ]];then
+			RESULT=${RESULT/${RESULT:0:1}/-${RESULT:0:1}}
+		fi
+
+	fi
+	
+
+		echo $RESULT
+}
+
+function mult_float(){
+	if [[ ${#@} -gt 2 ]];then
+		echo "too may arguments"
+		exit 1
+	fi
+	DECIMAL_COUNT=0
+	WHOLE_COUNT=0
+	OLD_IFS=$IFS
+	RESULT=1
+	for i in "$@"
+	do IFS=","
+		set -- $i
+		dec_cnt=${#2}
+		whl_cnt=${#1}
+		if [ $dec_cnt -gt $DECIMAL_COUNT ];then
+			DECIMAL_COUNT=$dec_cnt
+		fi
+		
+		(( WHOLE_COUNT += $whl_cnt ))
+		
+		if [[ -z $2 ]];then
+			DECIMAL_ARRAY+=("0")
+		else
+			DECIMAL_ARRAY+=("$2")
+		fi
+		
+		
+		WHOLE_ARRAY+=("$1")
+		
+	done
+	IFS=$OLD_IFS
+
+	
 	for (( i=0; i<${#DECIMAL_ARRAY[@]}; i++ ))
 	do
 		tmp_zeroes=0
@@ -68,31 +193,40 @@ function sum_float(){
 		fi
 		JOIN_ARRAY+=($join_value)
 	done
+	
+	
+	for element in ${JOIN_ARRAY[@]}
+	do
+		(( RESULT *= $element ))
+	done
 
-	FIRST=${JOIN_ARRAY[0]}
-	SECOND=${JOIN_ARRAY[1]}
-
-	if [[ -z $SECOND || -z $FIRST ]];then
-		RESULT="$(( $SECOND + $FIRST )),0"
-	else
-		if [ $FIRST -gt $SECOND ];then
-			RESULT=$(( $FIRST + $SECOND ))
-		else
-			RESULT=$(( $SECOND + $FIRST ))
-		fi
-		if [ $RESULT -lt 0 ];then
-			NEGATIVE=1
-			(( RESULT *= -1 )) 
-		fi
-		COMMA_PLACE=$(( ${#RESULT} - $DECIMAL_COUNT ))
-		PLACE=${RESULT:$COMMA_PLACE:1}
-		RESULT=${RESULT/$PLACE/",$PLACE"}
-		if [ ${RESULT:0:1} == "," ];then
-			RESULT=${RESULT/","/"0,"}
-		fi
-		if [[ $NEGATIVE -eq 1 ]];then
-			RESULT=${RESULT/${RESULT:0:1}/-${RESULT:0:1}}
-		fi
+	if [ $RESULT -lt 0 ];then
+		NEGATIVE=1
+		(( RESULT *= -1 )) 
 	fi
-		echo $RESULT
+
+	COMMA_PLACE=$(( $WHOLE_COUNT - 2 ))
+	echo $COMMA_PLACE
+	
+	PLACE=${RESULT:$COMMA_PLACE:1}
+	for (( i=0; i<${#RESULT}; i++ )); do
+		if [ $i -eq $COMMA_PLACE ];then
+			RESULT_TMP+=","
+		fi
+		RESULT_TMP+="${RESULT:$i:1}"
+	done
+	
+	echo $RESULT_TMP
+	
+	exit
+	
+	if [ ${RESULT:0:1} == "," ];then
+		RESULT=${RESULT/","/"0,"}
+	fi
+	
+	if [[ $NEGATIVE -eq 1 ]];then
+		RESULT=${RESULT/${RESULT:0:1}/-${RESULT:0:1}}
+	fi
+	echo $RESULT
 }
+
