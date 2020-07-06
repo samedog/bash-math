@@ -46,11 +46,8 @@ function sum_float(){
 		fi
 		DECIMAL_ARRAY+=("$2")
 		WHOLE_ARRAY+=("$1")
-		
 	done
 	IFS=$OLD_IFS
-
-	
 	for (( i=0; i<${#DECIMAL_ARRAY[@]}; i++ ))
 	do
 		tmp_zeroes=0
@@ -71,12 +68,10 @@ function sum_float(){
 		fi
 		JOIN_ARRAY+=($join_value)
 	done
-	
-	
+
 	FIRST=${JOIN_ARRAY[0]}
 	SECOND=${JOIN_ARRAY[1]}
 
-	
 	if [[ -z $SECOND || -z $FIRST ]];then
 		RESULT="$(( $SECOND + $FIRST )),0"
 	else
@@ -89,20 +84,15 @@ function sum_float(){
 			NEGATIVE=1
 			(( RESULT *= -1 )) 
 		fi
-
 		COMMA_PLACE=$(( ${#RESULT} - $DECIMAL_COUNT ))
 		PLACE=${RESULT:$COMMA_PLACE:1}
 		RESULT=${RESULT/$PLACE/",$PLACE"}
-		
 		if [ ${RESULT:0:1} == "," ];then
 			RESULT=${RESULT/","/"0,"}
 		fi
-		
 		if [[ $NEGATIVE -eq 1 ]];then
 			RESULT=${RESULT/${RESULT:0:1}/-${RESULT:0:1}}
 		fi
-
 	fi
 		echo $RESULT
 }
-
