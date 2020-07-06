@@ -17,7 +17,7 @@ Current functions:
 
 * pow(): does a simple x^y ($1^$2) doesn't supports negative exponents yet
 
-* sum_float(): can sum any given float (x,y) and/or int (x) list (whitespace sepparated) and will return a float [WOAH!!]
+* sum_float(): can sum any given float (x,y) and/or int (x) list (whitespace separated) and will return a float [WOAH!!]
   * If a single number is passed it will return a float for that number, not handy at all but it's an unintended feature.
 
 
