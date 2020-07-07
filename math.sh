@@ -7,7 +7,7 @@
 
 #supports large inputs (comma separated)
 #this supports both negative and positive numbers
-#also suports -- +- -+ etc kinda multipurpose 
+#also suports -- +- -+ kinda multipurpose 
 function addsubs(){
 	for var in "$@"
 	do
@@ -18,6 +18,10 @@ function addsubs(){
 
 # $1^$2 doesn't works with negative exponents (yet)
 function pow(){
+	if [[ ${#@} -gt 2 ]];then
+		echo "too may arguments"
+		exit 1
+	fi
 	cnt=1
 	for (( c=1; c<=$2; c++ ))
 	do  
@@ -140,6 +144,9 @@ function sum_float(){
 		echo $RESULT
 }
 
+## can multiply ints and floats and will return a 2 decimals float.
+## if a single int or float is given it will return
+## said float / 10 (unintended feature)
 function mult_float(){
 	if [[ ${#@} -gt 2 ]];then
 		echo "too may arguments"
@@ -227,4 +234,72 @@ function mult_float(){
 	fi
 	echo $RESULT
 }
+
+
+## divides 2 ints ($1/$2) and returns a float
+function division(){
+	if [[ ${#@} -gt 2 ]];then
+		echo "too may arguments, function takes 2 arguments"
+		exit 1
+	elif [[ ${#@} -lt 2 ]];then
+		echo "too few arguments, function takes 2 arguments"
+		exit 1
+	fi
+	
+	FIRST=$1
+	SECOND=$2
+	fneg=1
+	sneg=1
+	if [[ $FIRST == "-"* ]];then
+		FIRST=${FIRST#?}
+		fneg=-1
+	fi
+	if [[ $SECOND == "-"* ]];then
+		SECOND=${SECOND#?}
+		sneg=-1
+	fi
+	
+	sign=$(( $fneg * $sneg ))
+	if [ $sign -le 0 ];then
+		sign="-"
+	else
+		sign=""
+	fi
+	
+	comma=0
+	i=1
+	while [ $i -le $(( ${FIRST} + ${#SECOND} )) ]
+	do
+		if [[ -z $remains ]];then
+			div_temp=$(( $FIRST / $SECOND ))
+			remains=$(( $SECOND * $div_temp ))
+			remains=$(( $FIRST - $remains ))
+			RESULT+="$div_temp"
+		else
+			if [[ $remains -lt $SECOND && $comma -ne 1 ]];then
+				RESULT+=","
+				comma=1
+				(( remains *= 10 ))
+				if [ $remains -eq 0 ];then 
+					RESULT+=$remains
+					break
+				fi
+			elif [[ $remains -lt $SECOND && $comma -eq 1 ]];then
+				RESULT+="0"
+				(( remains *= 10 ))
+			elif [[ $remains -gt $SECOND ]];then
+				div_temp=$(( $remains / $SECOND ))
+				remains_temp=$(( $SECOND * $div_temp ))
+				remains=$(( $remains - $remains_temp ))
+				RESULT+=$div_temp
+				if [ $remains -eq 0 ];then
+					break
+				fi
+			fi
+		fi
+		(( i++ ))
+	done
+	echo $sign$RESULT
+}
+
 
