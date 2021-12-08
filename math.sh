@@ -34,114 +34,136 @@ function pow(){
 # can add non floats and will return a float
 # add or substract 2 floats
 # if a single int is given it will return a float
+
 function sum_float(){
     if [[ ${#@} -gt 2 ]];then
         echo "too may arguments"
         exit 1
     fi
-    DECIMAL_COUNT=0
-    OLD_IFS=$IFS
+    #some variables
+    int1_n=0
+    int2_n=0   
+    sum_n=0
+    DECIMALS=0
+
+    float1=$1
+    float2=$2
+    
+    loop=0
     for i in "$@"
-    do IFS=","
-        set -- $i
-        int_cnt=${#2}
-        if [ $int_cnt -gt $DECIMAL_COUNT ];then
-            DECIMAL_COUNT=$int_cnt
-        fi
-
-        DECIMAL_ARRAY+=("$2")
-        WHOLE_ARRAY+=("$1")
-        
-    done
-    IFS=$OLD_IFS
-    
-    
-    for (( i=0; i<${#DECIMAL_ARRAY[@]}; i++ ))
     do
-        tmp_zeroes=0
-        tmp_count=$DECIMAL_COUNT+1
-        NEGATIVE=0
-        value=${DECIMAL_ARRAY[$i]}
-        whole_value=${WHOLE_ARRAY[$i]}
-        if [ -z $value ];then
-            (( tmp_zeroes += 1))
+        (( loop+=1 ))
+        ## if any is a negative number
+        if [[ $i == *"-"* ]];then
+            declare int${loop}_n=1
         fi
-        (( tmp_count += $tmp_zeroes))
-        join_value=$whole_value$value
-        if [ $join_value -lt 0 ];then
-            NEGATIVE=1
-            (( join_value *= -1 )) 
-        fi
-        
-        if [ ${#join_value} -lt $tmp_count ];then
-            zeroes=$(( $tmp_count - ${#join_value} ))
-            for (( i=0; i<$zeroes; i++ ))
-            do
-                (( join_value *= 10 ))
-            done
-        fi
-        if [ $NEGATIVE -eq 1 ];then
-            (( join_value *= -1 ))
-        fi
-        JOIN_ARRAY+=($join_value)
-    done
-    
-    
-    
-    FIRST=${JOIN_ARRAY[0]}
-    SECOND=${JOIN_ARRAY[1]}
-
-
-    if [[ -z $SECOND || -z $FIRST ]];then
-        RESULT="$(( $SECOND + $FIRST )),0"
-    else
-        if [ $FIRST -gt $SECOND ];then
-            RESULT=$(( $FIRST + $SECOND ))
+        ##pre-processing the first number
+        if [[ $i == *","* ]];then
+            declare float${loop}_int=$(echo $i | cut -d',' -f1)
+            declare float${loop}_dec=$(echo $i | cut -d',' -f2)
         else
-            RESULT=$(( $SECOND + $FIRST ))
+            declare float${loop}_int=$1
+            declare float${loop}_dec=0
         fi
-        if [ $RESULT -lt 0 ];then
-            NEGATIVE=1
-            (( RESULT *= -1 )) 
-        fi
-        
-        if [ ${#RESULT} -lt $DECIMAL_COUNT ];then
-            zeroes=$(( $DECIMAL_COUNT -1 ))
-            for (( i=0; i<$zeroes; i++ ))
-            do
-                REBASED_RESULT+="0"
-            done
-            RESULT=$REBASED_RESULT$RESULT
-        fi
-        
-        
-        
-        COMMA_PLACE=$(( ${#RESULT} - $DECIMAL_COUNT ))
-        PLACE=${RESULT:$COMMA_PLACE:1}
-        
-            
-        PLACE=${RESULT:$COMMA_PLACE-1:1}
-        for (( i=0; i<${#RESULT}; i++ )); do
-            if [ $i -eq $COMMA_PLACE ];then
-                RESULT_TMP+=","
-            fi
-            RESULT_TMP+="${RESULT:$i:1}"
+    done
+    #stop the loop to count de decimal parts on each number
+    #and single number operations
+    DECIMALS=${#float1_dec}
+    if [[ ${#float1_dec} -le ${#float2_dec} ]];then
+        DECIMALS=${#float2_dec}
+    fi
+    #for easier processing we join the int and dec parts and 
+    #fill any necessary spots with zeroes
+    if [[ ${#float1_dec} -lt ${#float2_dec} ]];then
+        num_to_add=$(( ${#float2_dec} - ${#float1_dec} ))
+        for (( i=0; i<$num_to_add; i++ ))
+        do
+            float1_dec="$float1_dec"0
+        done
+    fi
+    if [[ ${#float2_dec} -lt ${#float1_dec} ]];then
+        num_to_add=$(( ${#float1_dec} - ${#float2_dec} ))
+        for (( i=0; i<$num_to_add; i++ ))
+        do
+            float2_dec="$float2_dec"0
         done
         
-        RESULT=$RESULT_TMP
-        
-        if [ ${RESULT:0:1} == "," ];then
-            RESULT=${RESULT/","/"0,"}
+    fi
+    ##decimals are normalized, let's join the numbers into 1
+    whole_num_1=$float1_int$float1_dec
+    whole_num_2=$float2_int$float2_dec
+    ######## both numbers are  preporcessed	
+	# now we normalize the numbers
+    #first nuber is a negative, adjusting
+	if [[ $whole_num_1 -lt 0 ]];then
+        whole_num_1=${whole_num_1:1}
+    fi
+    cnt=0
+    for (( i=0; i<${#whole_num_1}; i++ ))
+    do
+        if [[ ${whole_num_1:$i:1} -ne 0 ]];then
+           break
         fi
-        
-        if [[ $NEGATIVE -eq 1 ]];then
-            RESULT=${RESULT/${RESULT:0:1}/-${RESULT:0:1}}
-        fi
+         (( cnt += 1 ))
+    done
+    if [[ $cnt -ne 0 ]];then
+        whole_num_1=${whole_num_1:$cnt}
+    fi
+    if [[ $int1_n -eq 1 ]];then
+        (( whole_num_1 *= -1 ))
+    fi
 
+    
+    #second nuber is a negative, adjusting
+	if [[ $whole_num_2 -lt 0 ]];then
+        whole_num_2=${whole_num_2:1}
+    fi
+    cnt=0
+    for (( i=0; i<${#whole_num_2}; i++ ))
+    do
+        if [[ ${whole_num_2:$i:1} -ne 0 ]];then
+           break
+        fi
+         (( cnt += 1 ))
+    done
+    if [[ $cnt -ne 0 ]];then
+        whole_num_2=${whole_num_2:$cnt}
+    fi
+    if [[ $int2_n -eq 1 ]];then
+        (( whole_num_2 *= -1 ))
     fi
     
 
-        echo $RESULT
+    ## sum integers
+    sum=$(( ($whole_num_2*1) + ($whole_num_1*1) ))
+    #renormalize number
+    if [[ $sum -lt 0 ]];then
+        sum_n=1
+        (( sum *= -1 ))
+    fi
+    if [[ ${#sum} -le $DECIMALS ]];then
+       #less decimals than expected, adjusting
+        missing_dec=$(( $DECIMALS - ${#sum} ))
+        for (( i=0; i<missing_dec; i++ ))
+        do
+            sum=0"$sum"
+        done
+        sum="0.$sum"
+    else
+        #more decimals han expected, adjusting
+        #deleting decimals part from sum
+        surplus_dec=$(( ${#sum} - $DECIMALS ))
+        sum_int=${sum::-$DECIMALS}
+        sum_dec=${sum:$surplus_dec}
+        sum="$sum_int,$sum_dec"
+    fi
+    #######################################################
+    
+    if [[ $sum_n -eq 1 ]];then
+        sum="-$sum"
+    fi
+    RESULT=$sum
+    echo $RESULT
 }
 
 ## can multiply ints and floats and will return a 2 decimals float.
