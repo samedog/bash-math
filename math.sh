@@ -49,23 +49,26 @@ function sum_float(){
     float1=$1
     float2=$2
     
-    loop=0
+    loop=1
     for i in "$@"
     do
-        (( loop+=1 ))
+        echo $loop
+        echo $i
         ## if any is a negative number
         if [[ $i == *"-"* ]];then
             declare int${loop}_n=1
         fi
         ##pre-processing the first number
-        if [[ $i == *","* ]];then
+        if [[ "$i" == *","* ]];then
             declare float${loop}_int=$(echo $i | cut -d',' -f1)
             declare float${loop}_dec=$(echo $i | cut -d',' -f2)
         else
-            declare float${loop}_int=$1
+            declare float${loop}_int=$i
             declare float${loop}_dec=0
         fi
+         (( loop+=1 ))
     done
+    
     #stop the loop to count de decimal parts on each number
     #and single number operations
     DECIMALS=${#float1_dec}
