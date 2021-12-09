@@ -35,6 +35,7 @@ sum_float 2,1 3
 
 TODO:
 
+* rewrite mult_float 
 * natural log and log
 * nroot
 * ask myself why the hell i'm doing this
