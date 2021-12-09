@@ -35,7 +35,6 @@ sum_float 2,1 3
 
 TODO:
 
-* change some if with case because why not
 * natural log and log
 * nroot
 * ask myself why the hell i'm doing this
