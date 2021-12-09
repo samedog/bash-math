@@ -16,44 +16,36 @@ function addsubs(){
     echo $cnt
 }
 
-# $1^$2 doesn't works with negative exponents (yet)
-function pow(){
+# $1^$2
+function fpow(){
     if [[ ${#@} -gt 2 ]];then
         echo "too may arguments"
         exit 1
     fi
     cnt=1
-    for (( c=1; c<=$2; c++ ))
-    do  
-       (( cnt *= $1 ))
-    done
+    if [[ $2 -gt 0 ]];then 
+        for (( c=1; c<=$2; c++ ))
+        do  
+           (( cnt *= $1 ))
+        done
+    else
+        exponent=$2
+        exponent=$(( exponent *= -1 ))
+        for (( c=1; c<=$exponent; c++ ))
+        do  
+           (( cnt *= $1 ))
+        done
+        cnt=$(division 1 $cnt)
+        
+    fi
     echo $cnt
 }
 
-# this is hacky as hell but it works
-# can add non floats and will return a float
-# add or substract 2 floats
-# if a single int is given it will return a float
+function process_floats(){
 
-function sum_float(){
-    if [[ ${#@} -gt 2 ]];then
-        echo "too may arguments"
-        exit 1
-    fi
-    #some variables
-    int1_n=0
-    int2_n=0   
-    sum_n=0
-    DECIMALS=0
-
-    float1=$1
-    float2=$2
-    
-    loop=1
+loop=1
     for i in "$@"
     do
-        echo $loop
-        echo $i
         ## if any is a negative number
         if [[ $i == *"-"* ]];then
             declare int${loop}_n=1
@@ -62,10 +54,14 @@ function sum_float(){
         if [[ "$i" == *","* ]];then
             declare float${loop}_int=$(echo $i | cut -d',' -f1)
             declare float${loop}_dec=$(echo $i | cut -d',' -f2)
+        elif [[ "$i" == *"."* ]];then
+            declare float${loop}_int=$(echo $i | cut -d'.' -f1)
+            declare float${loop}_dec=$(echo $i | cut -d'.' -f2)
         else
             declare float${loop}_int=$i
             declare float${loop}_dec=0
         fi
+        
          (( loop+=1 ))
     done
     
@@ -95,6 +91,39 @@ function sum_float(){
     ##decimals are normalized, let's join the numbers into 1
     whole_num_1=$float1_int$float1_dec
     whole_num_2=$float2_int$float2_dec
+
+    echo "$whole_num_1|$whole_num_2|$int1_n|$int2_n|$DECIMALS"
+}
+
+
+# this is hacky as hell but it works
+# can add non floats and will return a float
+# add or substract 2 floats
+# if a single int is given it will return a float
+
+function sum_float(){
+    if [[ ${#@} -gt 2 ]];then
+        echo "too may arguments, function takes 2 arguments"
+        exit 1
+    elif [[ ${#@} -lt 2 ]];then
+        echo "too few arguments, function takes 2 arguments"
+        exit 1
+    fi
+    #some variables
+    int1_n=0
+    int2_n=0   
+    sum_n=0
+    DECIMALS=0
+    
+    return=$(process_floats $1 $2)
+    
+    whole_num_1=$( echo $return | cut -d'|' -f1 )
+    whole_num_2=$( echo $return | cut -d'|' -f2 )
+    int1_n=$( echo $return | cut -d'|' -f3 )
+    int2_n=$( echo $return | cut -d'|' -f4 )
+    DECIMALS=$( echo $return | cut -d'|' -f5 )
+
+    
     ######## both numbers are  preporcessed	
 	# now we normalize the numbers
     #first nuber is a negative, adjusting
@@ -135,7 +164,6 @@ function sum_float(){
     if [[ $int2_n -eq 1 ]];then
         (( whole_num_2 *= -1 ))
     fi
-    
 
     ## sum integers
     sum=$(( ($whole_num_2*1) + ($whole_num_1*1) ))
@@ -265,61 +293,70 @@ function division(){
         exit 1
     fi
     
-    FIRST=$1
-    SECOND=$2
-    fneg=1
-    sneg=1
-    if [[ $FIRST == "-"* ]];then
-        FIRST=${FIRST#?}
-        fneg=-1
-    fi
-    if [[ $SECOND == "-"* ]];then
-        SECOND=${SECOND#?}
-        sneg=-1
-    fi
+    int1_n=1
+    int2_n=1   
+    DECIMALS=0
+
     
-    sign=$(( $fneg * $sneg ))
+      return=$(process_floats $1 $2)
     
-    if [ $sign -le 0 ];then
-        sign="-"
-    else
-        sign=""
+    whole_num_1=$( echo $return | cut -d'|' -f1 )
+    whole_num_2=$( echo $return | cut -d'|' -f2 )
+    int1_n=$( echo $return | cut -d'|' -f3 )
+    int2_n=$( echo $return | cut -d'|' -f4 )
+    DECIMALS=$( echo $return | cut -d'|' -f5 )
+
+    ######## both numbers are  preporcessed	
+        
+    if [[ $int1_n -lt 0 ]];then
+        (( whole_num_1 *= -1 ))
     fi
+    if [[ $int2_n -lt 0 ]];then
+        (( whole_num_2 *= -1 ))
+    fi
+
+    
     
     comma=0
-    i=1
-    while [ $i -le $(( ${FIRST} + ${#SECOND} )) ]
-    do
-        if [[ -z $remains ]];then
-            div_temp=$(( $FIRST / $SECOND ))
-            remains=$(( $SECOND * $div_temp ))
-            remains=$(( $FIRST - $remains ))
-            RESULT+="$div_temp"
-        else
-            if [[ $remains -lt $SECOND && $comma -ne 1 ]];then
-                RESULT+=","
+    result=
+    first=$whole_num_1
+    second=$whole_num_2
+    remain=0
+    trail_zero=
+    for (( i=1; i<=10; i++ ))
+    do 
+        #echo "$first / $second = $result"
+        #echo "$remain"
+        div=$(( $first / $second ))
+        if [[ $div -eq 0 ]];then
+            if [[ $comma -eq 0 ]];then
+                result="$result"0,
                 comma=1
-                (( remains *= 10 ))
-                if [ $remains -eq 0 ];then 
-                    RESULT+=$remains
-                    break
-                fi
-            elif [[ $remains -lt $SECOND && $comma -eq 1 ]];then
-                RESULT+="0"
-                (( remains *= 10 ))
-            elif [[ $remains -gt $SECOND ]];then
-                div_temp=$(( $remains / $SECOND ))
-                remains_temp=$(( $SECOND * $div_temp ))
-                remains=$(( $remains - $remains_temp ))
-                RESULT+=$div_temp
-                if [ $remains -eq 0 ];then
-                    break
-                fi
+                (( first *= 10 ))
+            else
+                if [[ $remain -eq 0 ]];then
+                    result="$result"0
+                    (( first *= 10 ))
+                else
+                    (( first *= 10 ))
+                fi 
+                remain=0
             fi
+        else
+        remain=$div
+        first=$(( first - ( $second * div ) ))
+        result=$result$div
         fi
-        (( i++ ))
+        if [[ $first -eq 0 ]];then
+            break
+        fi
+
     done
-    echo $sign$RESULT
+    if [[ $value -lt 0 ]];then
+        result=-"$result"
+    fi
+    echo $result
+   
 }
 
 
