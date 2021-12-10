@@ -35,7 +35,7 @@ function fpow(){
         do  
            (( cnt *= $1 ))
         done
-        cnt=$(division 1 $cnt)
+        cnt=$(div_float 1 $cnt)
         
     fi
     echo $cnt
@@ -205,86 +205,45 @@ function mult_float(){
         echo "too may arguments"
         exit 1
     fi
-    DECIMAL_COUNT=0
-    WHOLE_COUNT=0
-    OLD_IFS=$IFS
-    RESULT=1
-    
-    for i in "$@"
-    do IFS=","
-        set -- $i
-        dec_cnt=${#2}
-        whl_cnt=${#1}
-        if [ $dec_cnt -gt $DECIMAL_COUNT ];then
-            DECIMAL_COUNT=$dec_cnt
+    DECIMALS=0
+    count=1
+    for i in $@
+    do
+        # bash fails when multiplying numbers longer than 11 digits
+        # so we adjust accordingly
+
+        if [[ ${#i} -gt 10 ]];then 
+            deleted=$((  ${#i} - 10 ))
+               i=${i::-$deleted}
         fi
-        (( WHOLE_COUNT += $whl_cnt ))
-        if [[ -z $2 ]];then
-            DECIMAL_ARRAY+=("0")
-        else
-            DECIMAL_ARRAY+=("$2")
+        if [[ ! $i == *","* ]];then
+            i=$i,0
         fi
-        WHOLE_ARRAY+=("$1")
         
+        integer="${i%%","*}"
+        decimal="${i#*","}"
+        (( DECIMALS += ${#decimal} ))
+        declare number${count}=$integer$decimal
+        if [[ $count -eq 2 ]];then
+            pre_result=$(( $number1 * $number2 ))
+        fi
+        (( count++ ))
     done
-    
-    IFS=$OLD_IFS
-    
-    for (( i=0; i<${#DECIMAL_ARRAY[@]}; i++ ))
+    DECIMALS=$(( ${#pre_result} - $DECIMALS ))
+    for (( i=1; i<=${#pre_result};i++ ))
     do
-        tmp_zeroes=0
-        tmp_count=$DECIMAL_COUNT
-        value=${DECIMAL_ARRAY[$i]}
-        whole_value=${WHOLE_ARRAY[$i]}
-        if [ -z $value ];then
-            (( tmp_zeroes += 1))
+        result+=${pre_result:(( $i -1 )):1}
+        if [[ $i -eq $DECIMALS ]];then
+            result+=","
         fi
-        (( tmp_count += $tmp_zeroes))
-        join_value=$whole_value$value
-        if [ ${#join_value} -lt $tmp_count ];then
-            zeroes=$(( $tmp_count - ${#join_value} ))
-            for (( i=0; i<$zeroes; i++ ))
-            do
-                (( join_value *= 10 ))
-            done
-        fi
-        JOIN_ARRAY+=($join_value)
     done
     
-    for element in ${JOIN_ARRAY[@]}
-    do
-        (( RESULT *= $element ))
-    done
-    if [ $RESULT -lt 0 ];then
-        NEGATIVE=1
-        (( RESULT *= -1 )) 
-    fi
-    
-    COMMA_PLACE=$(( $WHOLE_COUNT - 2 ))
-    PLACE=${RESULT:$COMMA_PLACE:1}
-    
-    for (( i=0; i<${#RESULT}; i++ )); do
-        if [ $i -eq $COMMA_PLACE ];then
-            RESULT_TMP+=","
-        fi
-        RESULT_TMP+="${RESULT:$i:1}"
-    done
-            
-    RESULT=$RESULT_TMP
-    
-    if [ ${RESULT:0:1} == "," ];then
-        RESULT=${RESULT/","/"0,"}
-    fi
-    if [[ $NEGATIVE -eq 1 ]];then
-        RESULT=${RESULT/${RESULT:0:1}/-${RESULT:0:1}}
-    fi
-    
-    echo $RESULT
+    echo $result
 }
 
 
 ## divides 2 ints ($1/$2) and returns a float
-function division(){
+function div_float(){
     if [[ ${#@} -gt 2 ]];then
         echo "too may arguments, function takes 2 arguments"
         exit 1
@@ -297,8 +256,7 @@ function division(){
     int2_n=1   
     DECIMALS=0
 
-    
-      return=$(process_floats $1 $2)
+    return=$(process_floats $1 $2)
     
     whole_num_1=$( echo $return | cut -d'|' -f1 )
     whole_num_2=$( echo $return | cut -d'|' -f2 )
@@ -315,8 +273,6 @@ function division(){
         (( whole_num_2 *= -1 ))
     fi
 
-    
-    
     comma=0
     result=
     first=$whole_num_1
@@ -325,8 +281,8 @@ function division(){
     trail_zero=
     for (( i=1; i<=10; i++ ))
     do 
-        #echo "$first / $second = $result"
-        #echo "$remain"
+        #"$first / $second = $result"
+        #"$remain"
         div=$(( $first / $second ))
         if [[ $div -eq 0 ]];then
             if [[ $comma -eq 0 ]];then
