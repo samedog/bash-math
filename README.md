@@ -14,8 +14,7 @@ and enjoy.
 Current functions:
 
 * fpow(): does a simple x^y ($1^$2)
-  * Supports negative exponents.
-  * Doesn't supports negative base.
+  * Supports negative exponent and base
   * doesn't support floats.
   * Doesn't supports (x/y) exponents.
 

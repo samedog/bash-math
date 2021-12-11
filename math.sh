@@ -139,11 +139,15 @@ function div_float(){
     #before anything else
     for i in $@
     do
-        decimal="${i#*","}"
-        if [[ $DECIMALS -lt ${#decimal} ]];then
-                DECIMALS=${#decimal}
-        fi
+        #if we pass 2 int DECIMALS default to 1 for further processing
+        if [[ $i == *","* ]];then
+            decimal="${i#*","}"
+            if [[ $DECIMALS -lt ${#decimal} ]];then
+                    DECIMALS=${#decimal}
+            fi
+        fi 
     done
+
     ##preprocess the numbers
     for i in $@
     do
@@ -155,6 +159,7 @@ function div_float(){
         if [[ $number -lt 0 ]];then
             (( value *= -1 ))
             (( number *= -1 ))
+
         fi
         if [[ $DECIMALS -gt ${#number} ]];then
             adjust=$(( $DECIMALS - ${#decimal} ))
@@ -167,9 +172,9 @@ function div_float(){
     for (( i=1; i<=10; i++ ))
     do 
         #structure:
-        #$number1 / $number2 = $result
-        #$remain
+
         div=$(( number1 / number2 )) 
+        #echo "$div | $number1 / $number2"
         if [[ $div -eq 0 ]];then
             # if comma is not set and result is empty
             if [[ $comma -eq 0 ]] && [[ -z $result ]] ;then
@@ -207,5 +212,6 @@ function div_float(){
     echo $result
    
 }
+
 
 
