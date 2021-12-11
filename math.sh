@@ -11,26 +11,32 @@ function fpow(){
         echo "too may arguments"
         exit 1
     fi
-    cnt=1
-    if [[ $2 -gt 0 ]];then 
-        for (( i=1; i<=$2; i++ ))
-        do  
-           (( cnt *= $1 ))
-        done
-    else
-        exponent=$2
+    result=1
+    base=$1
+    exponent=$2
+    if [[ $base -gt 0 ]] && [[ $exponent -gt 0 ]] || [[ $base -lt 0 ]] && [[ $exponent -gt 0 ]];then
+        for (( i=1; i<=$exponent; i++ ))
+             do  
+            (( result *= base ))
+         done
+    elif [[ $base -gt 0 ]] && [[ $exponent -lt 0 ]];then
         exponent=$(( exponent *= -1 ))
         for (( i=1; i<=$exponent; i++ ))
         do  
-           (( cnt *= $1 ))
+           (( result *= base ))
         done
-        if [[ $1 -lt 0 ]];then
-            cnt=$(div_float 1 -$cnt)
-        else
-            cnt=$(div_float 1 $cnt)
-        fi
+        result=$(div_float 1 $result)
+    elif [[ $base -lt 0 ]] && [[ $exponent -lt 0 ]];then
+        exponent=$(( exponent *= -1 ))
+        base=$(( base *= -1 ))
+        for (( i=1; i<=$exponent; i++ ))
+        do  
+           (( result *= base ))
+        done
+       result=$(div_float 1 $result)
     fi
-    echo $cnt
+   
+    echo $result
 }
 
 # can add non floats and will return a float
@@ -118,7 +124,7 @@ function mult_float(){
 }
 
 
-## divides 2 ints ($1/$2) and returns a float
+## divides 2 ints or floats ($1/$2) and returns a float
 function div_float(){
     if [[ ${#@} -gt 2 ]];then
         echo "too many arguments, function takes 2 arguments"
@@ -135,7 +141,7 @@ function div_float(){
     DECIMALS=0
     value=1
     count=1
-    #just like in sum_flaot we need to now the quantity of decimals
+    #just like in sum_float we need to now the quantity of decimals
     #before anything else
     for i in $@
     do
@@ -159,7 +165,6 @@ function div_float(){
         if [[ $number -lt 0 ]];then
             (( value *= -1 ))
             (( number *= -1 ))
-
         fi
         if [[ $DECIMALS -gt ${#number} ]];then
             adjust=$(( $DECIMALS - ${#decimal} ))
@@ -172,7 +177,8 @@ function div_float(){
     for (( i=1; i<=10; i++ ))
     do 
         #structure:
-
+        #$number1 / $number2 = $result
+        #$remain
         div=$(( number1 / number2 )) 
         #echo "$div | $number1 / $number2"
         if [[ $div -eq 0 ]];then
