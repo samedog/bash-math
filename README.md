@@ -13,29 +13,32 @@ and enjoy.
 
 Current functions:
 
-* addsubs(): can sum any given int (x) list (whitespace separated), supports -- +- and ++ 
+* pow_float(): does a simple x^y ($1^$2) (supports negative exponents doesn't support floats yet)
 
-* fpow(): does a simple x^y ($1^$2) now supports negative exponents
-
-* sum_float(): can sum any given float (x,y) and/or int (x) list (whitespace separated) and will return a float [WOAH!!]
-  * If a single number is passed it will return a float for that number, not handy at all but it's an unintended feature.
+* sum_float(): can sum any given numbers
+  * If a single number is passed it will return a float for that number
+  * Supports multiple inputs
+  * Supports float (x,y) and int (x) numbers
+  * Supports + and - numbers 
   
-* mult_float(): can multiply ints and floats and will return a float.
-
-* division(): divides $1/$2 and accepts floats.
-
+* mult_float(): can multiply ints and floats and will return a float (supports multiple numbers)
+  * Supports float (x,y) and int (x) numbers
+  * Supports multiple inputs
+  * Supports + and - numbers 
+  
+* division(): divides ( $1 / $2 )
+  * Supports float (x,y) and int (x) numbers
+  * Supports + and - numbers 
+  
 Test code:
-```Shell
-#!/bin/bash
-. /path/to/math.sh
 
-sum_float 2,1 3
+. /path/to/math.sh
+sum_float 2,1 -3
 
 ```
 
 TODO:
 
-* rewrite mult_float 
 * natural log and log
 * nroot
 * ask myself why the hell i'm doing this
