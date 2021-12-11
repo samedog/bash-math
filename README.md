@@ -26,7 +26,7 @@ Current functions:
   * Supports multiple inputs
   * Supports + and - numbers 
   
-* division(): divides ( $1 / $2 )
+* div_float(): divides ( $1 / $2 )
   * Supports float (x,y) and int (x) numbers
   * Supports + and - numbers 
   
