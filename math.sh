@@ -112,7 +112,6 @@ function sum_float(){
         fi
         integer="${i%%","*}"
         decimal="${i#*","}"
-        
         if [[ $integer -lt 0 ]];then
             (( integer *= -1 ))
             nflag=1
@@ -142,7 +141,6 @@ function sum_float(){
 
 ## can multiply ints and floats and will return a float.
 function mult_float(){
-    #mult_float() now accepts multiple inputs and will process them left to right 
     DECIMALS=0
     count=1
     pre_result=1
@@ -178,7 +176,7 @@ function mult_float(){
 ## divides 2 ints ($1/$2) and returns a float
 function div_float(){
     if [[ ${#@} -gt 2 ]];then
-        echo "too may arguments, function takes 2 arguments"
+        echo "too many arguments, function takes 2 arguments"
         exit 1
     elif [[ ${#@} -lt 2 ]];then
         echo "too few arguments, function takes 2 arguments"

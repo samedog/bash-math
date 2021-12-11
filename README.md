@@ -13,7 +13,11 @@ and enjoy.
 
 Current functions:
 
-* pow_float(): does a simple x^y ($1^$2) (supports negative exponents doesn't support floats yet)
+* fpow(): does a simple x^y ($1^$2)
+  * Supports negative exponents.
+  * Doesn't supports negative base.
+  * doesn't support floats.
+  * Doesn't supports (x/y) exponents.
 
 * sum_float(): can sum any given numbers
   * If a single number is passed it will return a float for that number
