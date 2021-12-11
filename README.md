@@ -32,7 +32,7 @@ Current functions:
   
 * div_float(): divides ( $1 / $2 )
   * Supports float (x,y) and int (x) numbers
-  * Supports + and - numbers 
+  * Supports + and - numbers
   
 Test code:
 

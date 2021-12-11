@@ -13,19 +13,22 @@ function fpow(){
     fi
     cnt=1
     if [[ $2 -gt 0 ]];then 
-        for (( c=1; c<=$2; c++ ))
+        for (( i=1; i<=$2; i++ ))
         do  
            (( cnt *= $1 ))
         done
     else
         exponent=$2
         exponent=$(( exponent *= -1 ))
-        for (( c=1; c<=$exponent; c++ ))
+        for (( i=1; i<=$exponent; i++ ))
         do  
            (( cnt *= $1 ))
         done
-        cnt=$(div_float 1 $cnt)
-        
+        if [[ $1 -lt 0 ]];then
+            cnt=$(div_float 1 -$cnt)
+        else
+            cnt=$(div_float 1 $cnt)
+        fi
     fi
     echo $cnt
 }
@@ -70,7 +73,6 @@ function sum_float(){
         (( pre_result += number ))
         (( count++ ))
     done
-    
     DECIMALS=$(( ${#pre_result} - $DECIMALS ))
     for (( i=1; i<=${#pre_result};i++ ))
     do
@@ -128,8 +130,8 @@ function div_float(){
 
     comma=0
     result=
-    remain=0
     trail_zero=
+    remain=0
     DECIMALS=0
     value=1
     count=1
@@ -142,7 +144,7 @@ function div_float(){
                 DECIMALS=${#decimal}
         fi
     done
-    ##now we preprocess the numbers
+    ##preprocess the numbers
     for i in $@
     do
         if [[ ! $i == *","* ]];then
@@ -161,18 +163,26 @@ function div_float(){
         declare number${count}=$number
         (( count++ ))
     done
-    #division algorithm, up to 10 steps
+    #division algorithm, up to 10 steps, kinda shitty but i like it
     for (( i=1; i<=10; i++ ))
     do 
-        #"$first / $second = $result"
-        #"$remain"
+        #structure:
+        #$number1 / $number2 = $result
+        #$remain
         div=$(( number1 / number2 )) 
         if [[ $div -eq 0 ]];then
-            if [[ $comma -eq 0 ]];then
+            # if comma is not set and result is empty
+            if [[ $comma -eq 0 ]] && [[ -z $result ]] ;then
                 result="$result"0,
                 comma=1
                 (( number1 *= 10 ))
+            # if comma is not set and result is not empty
+            elif [[ $comma -eq 0 ]] && [[ ! -z $result ]] ;then
+                result="$result",
+                comma=1
+                (( number1 *= 10 ))
             else
+            # if comma is set
                 if [[ $remain -eq 0 ]];then
                     result="$result"0
                     (( number1 *= 10 ))
@@ -186,6 +196,7 @@ function div_float(){
             number1=$(( number1 - ( number2 * div ) ))
             result=$result$div
         fi
+        # if the number1 equals 0 then we reached the end of the divsion
         if [[ $number1 -eq 0 ]];then
             break
         fi
