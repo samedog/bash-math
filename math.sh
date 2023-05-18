@@ -14,28 +14,30 @@ function fpow(){
     result=1
     base=$1
     exponent=$2
-    if [[ $base -gt 0 ]] && [[ $exponent -gt 0 ]] || [[ $base -lt 0 ]] && [[ $exponent -gt 0 ]];then
-        for (( i=1; i<=$exponent; i++ ))
-             do  
-            (( result *= base ))
-         done
-    elif [[ $base -gt 0 ]] && [[ $exponent -lt 0 ]];then
-        exponent=$(( exponent *= -1 ))
-        for (( i=1; i<=$exponent; i++ ))
-        do  
-           (( result *= base ))
-        done
-        result=$(div_float 1 $result)
-    elif [[ $base -lt 0 ]] && [[ $exponent -lt 0 ]];then
-        exponent=$(( exponent *= -1 ))
-        base=$(( base *= -1 ))
-        for (( i=1; i<=$exponent; i++ ))
-        do  
-           (( result *= base ))
-        done
-       result=$(div_float 1 $result)
+    extra=1
+    switch=0
+    
+    if [[ $exponent -lt 0 ]];then
+        (( exponent *= -1 ))
+        switch=1
+	fi
+    if [[ $base -lt 0 ]];then
+        (( base *= -1 ))
+        extra=-1
     fi
-   
+    
+	for (( i=1; i<=$exponent; i++ ))
+        do  
+           (( result *= base ))
+        done
+    
+    if [[ switch -gt 0 ]];then
+        result=$(div_float 1 $result)
+        result=$(mult_float result extra)
+    else
+		(( result *= extra ))
+    fi
+    
     echo $result
 }
 
@@ -95,8 +97,13 @@ function mult_float(){
     DECIMALS=0
     count=1
     pre_result=1
+    negative=0
+    
     for i in $@
     do
+		if [[ $i -lt 0 ]];then
+			negative=1
+		fi
         # bash fails when multiplying numbers longer than 11 digits
         # so we adjust accordingly
         if [[ ${#i} -gt 10 ]];then 
@@ -120,6 +127,9 @@ function mult_float(){
             result+=","
         fi
     done
+    if [[ negative -eq 1 ]];then
+		result=-"$result"
+	fi
     echo $result
 }
 
@@ -141,7 +151,7 @@ function div_float(){
     DECIMALS=0
     value=1
     count=1
-    #just like in sum_float we need to now the quantity of decimals
+    #just like in sum_float we need to now the amount of decimals
     #before anything else
     for i in $@
     do
